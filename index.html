@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>HTMX + FastAPI Field Validation</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; }
+    .field { margin-bottom: 1rem; }
+    label { display:block; font-weight: 600; margin-bottom: .3rem; }
+    input { width:100%; padding:.55rem; border:1px solid #ccc; border-radius:6px; }
+    .msg { font-size: .9rem; margin-top: .25rem; }
+    .ok { color: #116611; }
+    .err { color: #b00020; }
+    ul.suggestions { list-style:none; padding:0; margin:.25rem 0 0; border:1px solid #ddd; border-radius:6px; }
+    ul.suggestions li { padding:.45rem .6rem; cursor:pointer; }
+    ul.suggestions li:hover { background:#f3f3f3; }
+  </style>
+</head>
+<body>
+  <h1>Contact Form</h1>
+
+  <form id="contact-form" method="post" action="/submit">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" name="name"
+             hx-post="/validate/name"
+             hx-trigger="blur"
+             hx-target="#name-msg"
+             hx-swap="innerHTML" />
+      <div id="name-msg" class="msg"></div>
+    </div>
+
+    <div class="field">
+      <label for="address">Address</label>
+      <input id="address" name="address" autocomplete="off"
+             hx-get="/address/suggest"
+             hx-trigger="keyup changed delay:300ms"
+             hx-target="#address-suggestions"
+             hx-include="[name='address']"
+             hx-swap="innerHTML"
+
+             hx-post="/validate/address"
+             hx-trigger="blur"
+             hx-target="#address-msg"
+             hx-swap="innerHTML" />
+      <div id="address-msg" class="msg"></div>
+      <div id="address-suggestions"></div>
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone Number</label>
+      <input id="phone" name="phone"
+             hx-post="/validate/phone"
+             hx-trigger="blur"
+             hx-target="#phone-msg"
+             hx-swap="innerHTML" />
+      <div id="phone-msg" class="msg"></div>
+    </div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    // Click-to-fill for address suggestions
+    document.body.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-address]");
+      if (!item) return;
+      document.getElementById("address").value = item.dataset.address;
+      document.getElementById("address-suggestions").innerHTML = "";
+    });
+  </script>
+</body>
+</html>
